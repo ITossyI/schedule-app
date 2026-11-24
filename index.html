@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>DayFlow - 개인화 일정관리</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <!-- 로그인 / 회원가입 화면 -->
+  <div id="auth-screen" class="auth-screen">
+    <div class="auth-card">
+      <div class="auth-brand">
+        <div class="brand-logo">📅</div>
+        <h1>DayFlow</h1>
+        <p>PC와 모바일 어디서나, 나만의 일정관리</p>
+      </div>
+
+      <div class="auth-tabs">
+        <button id="tab-login" class="auth-tab active" type="button">로그인</button>
+        <button id="tab-register" class="auth-tab" type="button">회원가입</button>
+      </div>
+
+      <form id="auth-form" class="auth-form">
+        <div class="form-group">
+          <label for="auth-username">아이디</label>
+          <input id="auth-username" type="text" placeholder="아이디를 입력하세요" required autocomplete="username" />
+        </div>
+        <div class="form-group" id="name-group" style="display: none;">
+          <label for="auth-name">표시 이름</label>
+          <input id="auth-name" type="text" placeholder="예: 홍길동" />
+        </div>
+        <div class="form-group">
+          <label for="auth-password">비밀번호</label>
+          <input id="auth-password" type="password" placeholder="비밀번호를 입력하세요" required autocomplete="current-password" />
+        </div>
+        <p id="auth-error" class="auth-error" aria-live="polite"></p>
+        <button id="auth-submit" type="submit" class="btn btn-primary btn-full">로그인</button>
+      </form>
+
+      <div class="auth-divider"><span>또는</span></div>
+      <button id="demo-login-btn" type="button" class="btn btn-secondary btn-full">
+        ✨ 데모 계정으로 바로 체험하기
+      </button>
+    </div>
+  </div>
+
+  <!-- 메인 앱 화면 -->
+  <div id="app-screen" class="app-screen hidden">
+    <!-- PC 사이드바 -->
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <div class="brand-inline">
+          <span class="brand-logo-sm">📅</span>
+          <span class="brand-title">DayFlow</span>
+        </div>
+      </div>
+
+      <button id="pc-add-btn" class="btn btn-primary btn-full add-schedule-btn" type="button">
+        + 새 일정 추가
+      </button>
+
+      <nav class="sidebar-nav">
+        <button class="nav-item active" data-view="calendar" type="button">
+          <span>🗓️</span> 캘린더
+        </button>
+        <button class="nav-item" data-view="list" type="button">
+          <span>📋</span> 전체 일정
+        </button>
+        <button class="nav-item" data-view="settings" type="button">
+          <span>⚙️</span> 개인화 설정
+        </button>
+      </nav>
+
+      <div class="sidebar-summary">
+        <h3>오늘의 요약</h3>
+        <div class="summary-card">
+          <div>
+            <span class="summary-label">오늘 일정</span>
+            <strong id="today-count">0건</strong>
+          </div>
+          <div>
+            <span class="summary-label">남은 할 일</span>
+            <strong id="pending-count">0건</strong>
+          </div>
+        </div>
+      </div>
+
+      <div class="sidebar-footer">
+        <div class="user-badge">
+          <div id="user-avatar" class="user-avatar">U</div>
+          <div class="user-info">
+            <strong id="user-display-name">사용자</strong>
+            <span id="user-id-label">@user</span>
+          </div>
+        </div>
+        <button id="logout-btn" class="btn btn-ghost btn-sm" type="button">로그아웃</button>
+      </div>
+    </aside>
+
+    <!-- 메인 콘텐츠 -->
+    <main class="main-content">
+      <!-- 모바일 상단 헤더 -->
+      <header class="mobile-header">
+        <div class="brand-inline">
+          <span class="brand-logo-sm">📅</span>
+          <span class="brand-title">DayFlow</span>
+        </div>
+        <div class="mobile-user-actions">
+          <span id="mobile-user-name" class="mobile-user-chip">사용자</span>
+          <button id="mobile-logout-btn" class="btn btn-ghost btn-sm" type="button">로그아웃</button>
+        </div>
+      </header>
+
+      <!-- 캘린더 뷰 -->
+      <section id="view-calendar" class="view-section active">
+        <div class="view-toolbar">
+          <div class="month-controls">
+            <button id="prev-month-btn" class="icon-btn" type="button" aria-label="이전 달">◀</button>
+            <h2 id="current-month-label">2026년 11월</h2>
+            <button id="next-month-btn" class="icon-btn" type="button" aria-label="다음 달">▶</button>
+            <button id="today-btn" class="btn btn-secondary btn-sm" type="button">오늘</button>
+          </div>
+          <div class="category-filters">
+            <select id="calendar-category-filter" aria-label="카테고리 필터">
+              <option value="all">전체 카테고리</option>
+              <option value="work">업무</option>
+              <option value="personal">개인</option>
+              <option value="study">학습</option>
+              <option value="health">건강</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="calendar-layout">
+          <div class="calendar-card">
+            <div class="calendar-weekdays">
+              <div class="sun">일</div>
+              <div>월</div>
+              <div>화</div>
+              <div>수</div>
+              <div>목</div>
+              <div>금</div>
+              <div class="sat">토</div>
+            </div>
+            <div id="calendar-grid" class="calendar-grid"></div>
+          </div>
+
+          <!-- 선택된 날짜 상세 패널 -->
+          <div class="day-detail-card">
+            <div class="day-detail-header">
+              <div>
+                <h3 id="selected-date-title">선택된 날짜</h3>
+                <p id="selected-date-subtitle" class="muted-text">일정을 확인하거나 추가하세요</p>
+              </div>
+              <button id="detail-add-btn" class="btn btn-primary btn-sm" type="button">+ 추가</button>
+            </div>
+            <div id="day-schedule-list" class="schedule-list"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 전체 일정 목록 뷰 -->
+      <section id="view-list" class="view-section">
+        <div class="view-toolbar">
+          <h2>전체 일정</h2>
+          <div class="list-filters">
+            <input id="search-input" type="search" placeholder="제목·메모 검색..." />
+            <select id="list-status-filter" aria-label="상태 필터">
+              <option value="all">전체 상태</option>
+              <option value="pending">진행 중</option>
+              <option value="done">완료됨</option>
+            </select>
+          </div>
+        </div>
+        <div id="all-schedule-list" class="schedule-list full-list"></div>
+      </section>
+
+      <!-- 개인화 설정 뷰 -->
+      <section id="view-settings" class="view-section">
+        <div class="view-toolbar">
+          <h2>개인화 설정</h2>
+        </div>
+        <div class="settings-grid">
+          <div class="settings-card">
+            <h3>프로필 및 화면 테마</h3>
+            <form id="settings-form" class="settings-form">
+              <div class="form-group">
+                <label for="setting-name">표시 이름</label>
+                <input id="setting-name" type="text" required />
+              </div>
+              <div class="form-group">
+                <label>강조 색상</label>
+                <div class="color-options">
+                  <button type="button" class="color-dot" data-color="#4f46e5" style="background:#4f46e5" aria-label="인디고"></button>
+                  <button type="button" class="color-dot" data-color="#0ea5e9" style="background:#0ea5e9" aria-label="스카이"></button>
+                  <button type="button" class="color-dot" data-color="#10b981" style="background:#10b981" aria-label="에메랄드"></button>
+                  <button type="button" class="color-dot" data-color="#f59e0b" style="background:#f59e0b" aria-label="앰버"></button>
+                  <button type="button" class="color-dot" data-color="#ec4899" style="background:#ec4899" aria-label="핑크"></button>
+                </div>
+              </div>
+              <div class="form-group checkbox-row">
+                <label for="setting-darkmode">다크 모드 사용</label>
+                <input id="setting-darkmode" type="checkbox" />
+              </div>
+              <button type="submit" class="btn btn-primary">설정 저장</button>
+              <span id="settings-saved-msg" class="saved-msg"></span>
+            </form>
+          </div>
+
+          <div class="settings-card">
+            <h3>데이터 백업</h3>
+            <p class="muted-text">내 일정을 JSON 파일로 내보내거나 가져올 수 있습니다.</p>
+            <div class="backup-actions">
+              <button id="export-btn" type="button" class="btn btn-secondary">일정 내보내기 (.json)</button>
+              <label class="btn btn-secondary file-label">
+                일정 가져오기
+                <input id="import-input" type="file" accept=".json" hidden />
+              </label>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- 모바일 하단 네비게이션 -->
+    <nav class="mobile-bottom-nav">
+      <button class="mobile-nav-item active" data-view="calendar" type="button">
+        <span>🗓️</span>
+        <small>캘린더</small>
+      </button>
+      <button class="mobile-nav-item" data-view="list" type="button">
+        <span>📋</span>
+        <small>일정목록</small>
+      </button>
+      <button id="mobile-add-btn" class="mobile-nav-add" type="button" aria-label="새 일정 추가">+</button>
+      <button class="mobile-nav-item" data-view="settings" type="button">
+        <span>⚙️</span>
+        <small>설정</small>
+      </button>
+    </nav>
+  </div>
+
+  <!-- 일정 추가/수정 모달 -->
+  <div id="schedule-modal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+    <div class="modal-backdrop"></div>
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 id="modal-title">새 일정 추가</h3>
+        <button id="close-modal-btn" class="icon-btn" type="button" aria-label="닫기">✕</button>
+      </div>
+      <form id="schedule-form" class="modal-form">
+        <input type="hidden" id="schedule-id" />
+        <div class="form-group">
+          <label for="schedule-title">일정 제목</label>
+          <input id="schedule-title" type="text" placeholder="예: 팀 주간 회의" required />
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="schedule-date">날짜</label>
+            <input id="schedule-date" type="date" required />
+          </div>
+          <div class="form-group">
+            <label for="schedule-time">시간</label>
+            <input id="schedule-time" type="time" value="09:00" />
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="schedule-category">카테고리</label>
+          <select id="schedule-category">
+            <option value="work">업무</option>
+            <option value="personal">개인</option>
+            <option value="study">학습</option>
+            <option value="health">건강</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="schedule-memo">메모</label>
+          <textarea id="schedule-memo" rows="3" placeholder="세부 내용을 입력하세요 (선택)"></textarea>
+        </div>
+        <div class="modal-actions">
+          <button id="cancel-modal-btn" type="button" class="btn btn-secondary">취소</button>
+          <button type="submit" class="btn btn-primary">저장하기</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
